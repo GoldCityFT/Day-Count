@@ -1,4 +1,4 @@
-const START_DATE = new Date(2026, 6, 12, 14, 54, 0);
+const START_DATE = new Date("2026-07-12T14:54:00+07:00");
 const COUNTER_TITLE = "ช่วงเวลาของฉัน";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -19,93 +19,7 @@ const elements = {
   toast: document.querySelector("#toast")
 };
 
-let settings = loadSettings();
 let deferredInstallPrompt = null;
-let timerId = null;
-
-function parseLocalDate(value) {
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(year, month - 1, day, 0, 0, 0, 0);
-}
-
-function toLocalISODate(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function atStartOfDay(date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function daysInMonth(year, monthIndex) {
-  return new Date(year, monthIndex + 1, 0).getDate();
-}
-
-function addYearsClamped(date, years) {
-  const targetYear = date.getFullYear() + years;
-  const targetMonth = date.getMonth();
-  const targetDay = Math.min(date.getDate(), daysInMonth(targetYear, targetMonth));
-  return new Date(targetYear, targetMonth, targetDay);
-}
-
-function addMonthsClamped(date, months) {
-  const monthIndex = date.getMonth() + months;
-  const targetYear = date.getFullYear() + Math.floor(monthIndex / 12);
-  const normalizedMonth = ((monthIndex % 12) + 12) % 12;
-  const targetDay = Math.min(date.getDate(), daysInMonth(targetYear, normalizedMonth));
-  return new Date(targetYear, normalizedMonth, targetDay);
-}
-
-function calendarDayNumber(date) {
-  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000;
-}
-
-function diffCalendarDays(start, end) {
-  return Math.round(calendarDayNumber(end) - calendarDayNumber(start));
-}
-
-function calculateCalendarDifference(start, end) {
-  let years = end.getFullYear() - start.getFullYear();
-  if (addYearsClamped(start, years) > end) years -= 1;
-
-  const afterYears = addYearsClamped(start, years);
-  let months =
-    (end.getFullYear() - afterYears.getFullYear()) * 12 +
-    (end.getMonth() - afterYears.getMonth());
-
-  if (addMonthsClamped(afterYears, months) > end) months -= 1;
-
-  const afterMonths = addMonthsClamped(afterYears, months);
-  const days = diffCalendarDays(afterMonths, end);
-
-  return { years, months, days };
-}
-
-function formatThaiDate(date) {
-  return new Intl.DateTimeFormat("th-TH", {
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  }).format(date);
-}
-
-function formatNumber(value) {
-  return new Intl.NumberFormat("th-TH").format(value);
-}
-
-function getNextMilestone(totalDays) {
-  const step = totalDays < 100 ? 10 : totalDays < 1000 ? 100 : 500;
-  const target = Math.max(step, Math.ceil((totalDays + 1) / step) * step);
-  const previous = target - step;
-  const progress = Math.min(1, Math.max(0, (totalDays - previous) / step));
-  return {
-    target,
-    remaining: target - totalDays,
-    progress
-  };
-}
 
 function daysInMonth(year, monthIndex) {
   return new Date(year, monthIndex + 1, 0).getDate();
@@ -173,7 +87,8 @@ function calculateElapsed(start, end) {
 
   const afterMonths = addMonthsClamped(afterYears, months);
 
-  let remainingMs = end.getTime() - afterMonths.getTime();
+  let remainingMs =
+    end.getTime() - afterMonths.getTime();
 
   const days = Math.floor(remainingMs / DAY_MS);
   remainingMs -= days * DAY_MS;
@@ -186,9 +101,10 @@ function calculateElapsed(start, end) {
 
   const seconds = Math.floor(remainingMs / 1000);
 
-  const totalDays = Math.floor(
-    (end.getTime() - start.getTime()) / DAY_MS
-  );
+  const exactTotalDays =
+    (end.getTime() - start.getTime()) / DAY_MS;
+
+  const totalDays = Math.floor(exactTotalDays);
 
   return {
     years,
@@ -197,15 +113,72 @@ function calculateElapsed(start, end) {
     hours,
     minutes,
     seconds,
-    totalDays
+    totalDays,
+    exactTotalDays
+  };
+}
+
+function formatNumber(value) {
+  return new Intl.NumberFormat("th-TH").format(value);
+}
+
+function getNextMilestone(exactTotalDays) {
+  const completedDays = Math.floor(exactTotalDays);
+
+  const step =
+    completedDays < 100
+      ? 10
+      : completedDays < 1000
+        ? 100
+        : 500;
+
+  const target =
+    (Math.floor(exactTotalDays / step) + 1) * step;
+
+  const previous = target - step;
+
+  const progress = Math.min(
+    1,
+    Math.max(
+      0,
+      (exactTotalDays - previous) / step
+    )
+  );
+
+  const remaining = Math.ceil(
+    target - exactTotalDays
+  );
+
+  return {
+    target,
+    remaining,
+    progress
   };
 }
 
 function render() {
   const now = new Date();
-  const elapsed = calculateElapsed(START_DATE, now);
 
-  elements.counterTitle.textContent = COUNTER_TITLE;
+  if (now < START_DATE) {
+    elements.years.textContent = "0";
+    elements.months.textContent = "0";
+    elements.days.textContent = "0";
+    elements.totalDays.textContent = "0";
+    elements.liveClock.textContent = "00:00:00";
+    return;
+  }
+
+  const elapsed = calculateElapsed(
+    START_DATE,
+    now
+  );
+
+  const milestone = getNextMilestone(
+    elapsed.exactTotalDays
+  );
+
+  elements.counterTitle.textContent =
+    COUNTER_TITLE;
 
   elements.years.textContent =
     formatNumber(elapsed.years);
@@ -224,82 +197,162 @@ function render() {
     elapsed.minutes,
     elapsed.seconds
   ]
-    .map(value => String(value).padStart(2, "0"))
+    .map(value =>
+      String(value).padStart(2, "0")
+    )
     .join(":");
 
   elements.startDateText.textContent =
     "12 กรกฎาคม 2569 เวลา 14:54 น.";
 
+  elements.milestoneTitle.textContent =
+    `ครบ ${formatNumber(milestone.target)} วัน`;
+
+  elements.milestoneDetail.textContent =
+    milestone.remaining === 1
+      ? "เหลืออีกไม่เกิน 1 วัน"
+      : `เหลืออีกประมาณ ${formatNumber(
+          milestone.remaining
+        )} วัน`;
+
+  const circumference = 2 * Math.PI * 18;
+
+  const offset =
+    circumference * (1 - milestone.progress);
+
+  elements.progressCircle.style.strokeDasharray =
+    circumference.toFixed(1);
+
+  elements.progressCircle.style.strokeDashoffset =
+    offset.toFixed(1);
+
+  elements.progressPercent.textContent =
+    `${Math.round(
+      milestone.progress * 100
+    )}%`;
+
   document.title =
-    `${COUNTER_TITLE} • ${formatNumber(elapsed.totalDays)} วัน`;
+    `${COUNTER_TITLE} • ${
+      formatNumber(elapsed.totalDays)
+    } วัน`;
 }
 
 function showToast(message) {
   elements.toast.textContent = message;
   elements.toast.classList.add("show");
+
   window.clearTimeout(showToast.timeoutId);
+
   showToast.timeoutId = window.setTimeout(() => {
     elements.toast.classList.remove("show");
   }, 2800);
 }
 
-window.addEventListener("beforeinstallprompt", event => {
-  event.preventDefault();
-  deferredInstallPrompt = event;
-  elements.installButton.classList.remove("hidden");
-});
+window.addEventListener(
+  "beforeinstallprompt",
+  event => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
 
-elements.installButton.addEventListener("click", async () => {
-  if (deferredInstallPrompt) {
-    deferredInstallPrompt.prompt();
-    await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt = null;
-    elements.installButton.classList.add("hidden");
-    return;
+    elements.installButton.classList.remove(
+      "hidden"
+    );
   }
+);
 
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  showToast(
-    isIOS
-      ? "บน iPhone: กด Share แล้วเลือก Add to Home Screen"
-      : "เปิดเมนูเบราว์เซอร์ แล้วเลือกเพิ่มไปยังหน้าจอหลัก"
-  );
-});
+elements.installButton.addEventListener(
+  "click",
+  async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
 
-window.addEventListener("appinstalled", () => {
-  elements.installButton.classList.add("hidden");
-  elements.statusText.textContent = "ติดตั้งบนหน้าจอเรียบร้อยแล้ว";
-  showToast("เพิ่มไว้บนหน้าจอมือถือแล้ว");
-});
+      await deferredInstallPrompt.userChoice;
+
+      deferredInstallPrompt = null;
+
+      elements.installButton.classList.add(
+        "hidden"
+      );
+
+      return;
+    }
+
+    const isIOS =
+      /iphone|ipad|ipod/i.test(
+        navigator.userAgent
+      );
+
+    showToast(
+      isIOS
+        ? "บน iPhone: กด Share แล้วเลือก Add to Home Screen"
+        : "เปิดเมนูเบราว์เซอร์ แล้วเลือกเพิ่มไปยังหน้าจอหลัก"
+    );
+  }
+);
+
+window.addEventListener(
+  "appinstalled",
+  () => {
+    elements.installButton.classList.add(
+      "hidden"
+    );
+
+    elements.statusText.textContent =
+      "ติดตั้งบนหน้าจอเรียบร้อยแล้ว";
+
+    showToast(
+      "เพิ่มไว้บนหน้าจอมือถือแล้ว"
+    );
+  }
+);
 
 function init() {
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const isIOS =
+    /iphone|ipad|ipod/i.test(
+      navigator.userAgent
+    );
+
+  const isStandalone =
+    window.matchMedia(
+      "(display-mode: standalone)"
+    ).matches ||
+    navigator.standalone === true;
 
   if (isIOS && !isStandalone) {
-    elements.installButton.classList.remove("hidden");
+    elements.installButton.classList.remove(
+      "hidden"
+    );
   }
 
-  function init() {
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("./service-worker.js")
-        .catch(error => {
-          console.warn(
-            "ลงทะเบียน Service Worker ไม่สำเร็จ",
-            error
-          );
-        });
-    });
+    window.addEventListener(
+      "load",
+      () => {
+        navigator.serviceWorker
+          .register("./service-worker.js")
+          .catch(error => {
+            console.warn(
+              "ลงทะเบียน Service Worker ไม่สำเร็จ",
+              error
+            );
+          });
+      }
+    );
   }
 
   render();
   window.setInterval(render, 1000);
 }
 
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") render();
-});
+document.addEventListener(
+  "visibilitychange",
+  () => {
+    if (
+      document.visibilityState === "visible"
+    ) {
+      render();
+    }
+  }
+);
 
 init();
