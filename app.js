@@ -68,43 +68,106 @@ function addMonthsClamped(date, months) {
   );
 }
 
-function calculateElapsed(start, end) {
-  let years = end.getFullYear() - start.getFullYear();
+function atStartOfLocalDay(date) {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    0,
+    0,
+    0,
+    0
+  );
+}
 
-  if (addYearsClamped(start, years) > end) {
+function calendarDayNumber(date) {
+  return (
+    Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    ) / DAY_MS
+  );
+}
+
+function diffCalendarDays(start, end) {
+  return Math.round(
+    calendarDayNumber(end) -
+    calendarDayNumber(start)
+  );
+}
+
+function calculateElapsed(start, end) {
+  const startDay = atStartOfLocalDay(start);
+  const endDay = atStartOfLocalDay(end);
+
+  // คำนวณจำนวนปีตามวันที่ปฏิทิน
+  let years =
+    endDay.getFullYear() -
+    startDay.getFullYear();
+
+  if (addYearsClamped(startDay, years) > endDay) {
     years--;
   }
 
-  const afterYears = addYearsClamped(start, years);
+  const afterYears =
+    addYearsClamped(startDay, years);
 
+  // คำนวณจำนวนเดือนตามวันที่ปฏิทิน
   let months =
-    (end.getFullYear() - afterYears.getFullYear()) * 12 +
-    (end.getMonth() - afterYears.getMonth());
+    (endDay.getFullYear() -
+      afterYears.getFullYear()) *
+      12 +
+    (endDay.getMonth() -
+      afterYears.getMonth());
 
-  if (addMonthsClamped(afterYears, months) > end) {
+  if (
+    addMonthsClamped(afterYears, months) >
+    endDay
+  ) {
     months--;
   }
 
-  const afterMonths = addMonthsClamped(afterYears, months);
+  const afterMonths =
+    addMonthsClamped(afterYears, months);
 
-  let remainingMs =
-    end.getTime() - afterMonths.getTime();
+  // วันเพิ่มทันทีเมื่อข้ามเวลา 00:00
+  const days =
+    diffCalendarDays(afterMonths, endDay);
 
-  const days = Math.floor(remainingMs / DAY_MS);
-  remainingMs -= days * DAY_MS;
+  const totalDays =
+    diffCalendarDays(startDay, endDay);
 
-  const hours = Math.floor(remainingMs / 3600000);
+  /*
+   * วันแรกเริ่มจับเวลาจาก 14:54
+   * เมื่อข้ามวันแล้ว ชั่วโมงจะเริ่มใหม่จาก 00:00
+   */
+  const clockAnchor =
+    totalDays === 0 ? start : endDay;
+
+  let remainingMs = Math.max(
+    0,
+    end.getTime() - clockAnchor.getTime()
+  );
+
+  const hours =
+    Math.floor(remainingMs / 3600000);
+
   remainingMs -= hours * 3600000;
 
-  const minutes = Math.floor(remainingMs / 60000);
+  const minutes =
+    Math.floor(remainingMs / 60000);
+
   remainingMs -= minutes * 60000;
 
-  const seconds = Math.floor(remainingMs / 1000);
+  const seconds =
+    Math.floor(remainingMs / 1000);
 
+  // ใช้สำหรับคำนวณวงแหวนเป้าหมาย
   const exactTotalDays =
-    (end.getTime() - start.getTime()) / DAY_MS;
-
-  const totalDays = Math.floor(exactTotalDays);
+    totalDays +
+    (end.getTime() - endDay.getTime()) /
+      DAY_MS;
 
   return {
     years,
