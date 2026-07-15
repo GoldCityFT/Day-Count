@@ -1,4 +1,6 @@
-const STORAGE_KEY = "personal-day-counter:v1";
+const START_DATE = new Date(2026, 6, 12, 14, 54, 0);
+const COUNTER_TITLE = "ช่วงเวลาของฉัน";
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const elements = {
   counterTitle: document.querySelector("#counterTitle"),
