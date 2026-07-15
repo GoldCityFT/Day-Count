@@ -1,4 +1,4 @@
-const CACHE_NAME = "day-counter-v2";
+const CACHE_NAME = "day-counter-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
