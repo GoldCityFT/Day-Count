@@ -30,26 +30,6 @@ let settings = loadSettings();
 let deferredInstallPrompt = null;
 let timerId = null;
 
-function loadSettings() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved?.startDate) {
-      return {
-        title: saved.title || "ช่วงเวลาของฉัน",
-        startDate: saved.startDate,
-        accent: saved.accent || "violet"
-      };
-    }
-  } catch (error) {
-    console.warn("อ่านค่าที่บันทึกไว้ไม่สำเร็จ", error);
-  }
-  return null;
-}
-
-function saveSettings(nextSettings) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSettings));
-}
-
 function parseLocalDate(value) {
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day, 0, 0, 0, 0);
@@ -180,34 +160,6 @@ function render() {
 
   document.documentElement.dataset.accent = settings.accent;
   document.title = `${settings.title} • ${formatNumber(totalDays)} วัน`;
-}
-
-function fillSettingsForm() {
-  const today = new Date();
-  elements.dateInput.max = toLocalISODate(today);
-
-  if (settings) {
-    elements.titleInput.value = settings.title;
-    elements.dateInput.value = settings.startDate;
-    elements.accentInput.value = settings.accent;
-  } else {
-    elements.titleInput.value = "ช่วงเวลาของฉัน";
-    elements.dateInput.value = toLocalISODate(today);
-    elements.accentInput.value = "violet";
-  }
-}
-
-function openSettings() {
-  fillSettingsForm();
-  if (!elements.settingsDialog.open) {
-    elements.settingsDialog.showModal();
-  }
-}
-
-function closeSettings() {
-  if (elements.settingsDialog.open && settings) {
-    elements.settingsDialog.close();
-  }
 }
 
 function showToast(message) {
