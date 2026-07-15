@@ -14,13 +14,6 @@ const elements = {
   milestoneDetail: document.querySelector("#milestoneDetail"),
   progressCircle: document.querySelector("#progressCircle"),
   progressPercent: document.querySelector("#progressPercent"),
-  settingsButton: document.querySelector("#settingsButton"),
-  settingsDialog: document.querySelector("#settingsDialog"),
-  settingsForm: document.querySelector("#settingsForm"),
-  closeDialogButton: document.querySelector("#closeDialogButton"),
-  titleInput: document.querySelector("#titleInput"),
-  dateInput: document.querySelector("#dateInput"),
-  accentInput: document.querySelector("#accentInput"),
   installButton: document.querySelector("#installButton"),
   statusText: document.querySelector("#statusText"),
   toast: document.querySelector("#toast")
@@ -114,52 +107,131 @@ function getNextMilestone(totalDays) {
   };
 }
 
-function render() {
-  if (!settings) return;
+function daysInMonth(year, monthIndex) {
+  return new Date(year, monthIndex + 1, 0).getDate();
+}
 
-  const now = new Date();
-  const today = atStartOfDay(now);
-  const start = parseLocalDate(settings.startDate);
+function addYearsClamped(date, years) {
+  const targetYear = date.getFullYear() + years;
+  const targetMonth = date.getMonth();
 
-  if (start > today) {
-    showToast("วันที่เริ่มต้นยังมาไม่ถึง กรุณาเลือกวันที่ใหม่");
-    openSettings();
-    return;
+  const targetDay = Math.min(
+    date.getDate(),
+    daysInMonth(targetYear, targetMonth)
+  );
+
+  return new Date(
+    targetYear,
+    targetMonth,
+    targetDay,
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds()
+  );
+}
+
+function addMonthsClamped(date, months) {
+  const totalMonths = date.getMonth() + months;
+
+  const targetYear =
+    date.getFullYear() + Math.floor(totalMonths / 12);
+
+  const targetMonth =
+    ((totalMonths % 12) + 12) % 12;
+
+  const targetDay = Math.min(
+    date.getDate(),
+    daysInMonth(targetYear, targetMonth)
+  );
+
+  return new Date(
+    targetYear,
+    targetMonth,
+    targetDay,
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds()
+  );
+}
+
+function calculateElapsed(start, end) {
+  let years = end.getFullYear() - start.getFullYear();
+
+  if (addYearsClamped(start, years) > end) {
+    years--;
   }
 
-  const calendarDiff = calculateCalendarDifference(start, today);
-  const totalDays = diffCalendarDays(start, today);
-  const milestone = getNextMilestone(totalDays);
+  const afterYears = addYearsClamped(start, years);
 
-  elements.counterTitle.textContent = settings.title;
-  elements.years.textContent = formatNumber(calendarDiff.years);
-  elements.months.textContent = formatNumber(calendarDiff.months);
-  elements.days.textContent = formatNumber(calendarDiff.days);
-  elements.totalDays.textContent = formatNumber(totalDays);
-  elements.startDateText.textContent = formatThaiDate(start);
+  let months =
+    (end.getFullYear() - afterYears.getFullYear()) * 12 +
+    (end.getMonth() - afterYears.getMonth());
 
-  const elapsedToday = now - today;
-  const hours = Math.floor(elapsedToday / 3600000);
-  const minutes = Math.floor((elapsedToday % 3600000) / 60000);
-  const seconds = Math.floor((elapsedToday % 60000) / 1000);
-  elements.liveClock.textContent = [hours, minutes, seconds]
+  if (addMonthsClamped(afterYears, months) > end) {
+    months--;
+  }
+
+  const afterMonths = addMonthsClamped(afterYears, months);
+
+  let remainingMs = end.getTime() - afterMonths.getTime();
+
+  const days = Math.floor(remainingMs / DAY_MS);
+  remainingMs -= days * DAY_MS;
+
+  const hours = Math.floor(remainingMs / 3600000);
+  remainingMs -= hours * 3600000;
+
+  const minutes = Math.floor(remainingMs / 60000);
+  remainingMs -= minutes * 60000;
+
+  const seconds = Math.floor(remainingMs / 1000);
+
+  const totalDays = Math.floor(
+    (end.getTime() - start.getTime()) / DAY_MS
+  );
+
+  return {
+    years,
+    months,
+    days,
+    hours,
+    minutes,
+    seconds,
+    totalDays
+  };
+}
+
+function render() {
+  const now = new Date();
+  const elapsed = calculateElapsed(START_DATE, now);
+
+  elements.counterTitle.textContent = COUNTER_TITLE;
+
+  elements.years.textContent =
+    formatNumber(elapsed.years);
+
+  elements.months.textContent =
+    formatNumber(elapsed.months);
+
+  elements.days.textContent =
+    formatNumber(elapsed.days);
+
+  elements.totalDays.textContent =
+    formatNumber(elapsed.totalDays);
+
+  elements.liveClock.textContent = [
+    elapsed.hours,
+    elapsed.minutes,
+    elapsed.seconds
+  ]
     .map(value => String(value).padStart(2, "0"))
     .join(":");
 
-  elements.milestoneTitle.textContent = `ครบ ${formatNumber(milestone.target)} วัน`;
-  elements.milestoneDetail.textContent =
-    milestone.remaining === 1
-      ? "เหลืออีก 1 วัน"
-      : `เหลืออีก ${formatNumber(milestone.remaining)} วัน`;
+  elements.startDateText.textContent =
+    "12 กรกฎาคม 2569 เวลา 14:54 น.";
 
-  const circumference = 2 * Math.PI * 18;
-  const offset = circumference * (1 - milestone.progress);
-  elements.progressCircle.style.strokeDasharray = circumference.toFixed(1);
-  elements.progressCircle.style.strokeDashoffset = offset.toFixed(1);
-  elements.progressPercent.textContent = `${Math.round(milestone.progress * 100)}%`;
-
-  document.documentElement.dataset.accent = settings.accent;
-  document.title = `${settings.title} • ${formatNumber(totalDays)} วัน`;
+  document.title =
+    `${COUNTER_TITLE} • ${formatNumber(elapsed.totalDays)} วัน`;
 }
 
 function showToast(message) {
@@ -170,40 +242,6 @@ function showToast(message) {
     elements.toast.classList.remove("show");
   }, 2800);
 }
-
-elements.settingsButton.addEventListener("click", openSettings);
-elements.closeDialogButton.addEventListener("click", closeSettings);
-
-elements.settingsDialog.addEventListener("cancel", event => {
-  if (!settings) {
-    event.preventDefault();
-  }
-});
-
-elements.settingsForm.addEventListener("submit", event => {
-  event.preventDefault();
-
-  const startDate = elements.dateInput.value;
-  const title = elements.titleInput.value.trim() || "ช่วงเวลาของฉัน";
-  const accent = elements.accentInput.value;
-
-  if (!startDate) {
-    showToast("กรุณาเลือกวันที่เริ่มต้น");
-    return;
-  }
-
-  const selectedDate = parseLocalDate(startDate);
-  if (selectedDate > atStartOfDay(new Date())) {
-    showToast("วันที่เริ่มต้นต้องไม่เกินวันนี้");
-    return;
-  }
-
-  settings = { title, startDate, accent };
-  saveSettings(settings);
-  elements.settingsDialog.close();
-  render();
-  showToast("บันทึกเรียบร้อย");
-});
 
 window.addEventListener("beforeinstallprompt", event => {
   event.preventDefault();
@@ -242,21 +280,22 @@ function init() {
     elements.installButton.classList.remove("hidden");
   }
 
+  function init() {
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js").catch(error => {
-        console.warn("ลงทะเบียน Service Worker ไม่สำเร็จ", error);
-      });
+      navigator.serviceWorker
+        .register("./service-worker.js")
+        .catch(error => {
+          console.warn(
+            "ลงทะเบียน Service Worker ไม่สำเร็จ",
+            error
+          );
+        });
     });
   }
 
-  if (!settings) {
-    openSettings();
-  } else {
-    render();
-  }
-
-  timerId = window.setInterval(render, 1000);
+  render();
+  window.setInterval(render, 1000);
 }
 
 document.addEventListener("visibilitychange", () => {
