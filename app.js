@@ -10,10 +10,9 @@ const elements = {
   totalDays: document.querySelector("#totalDays"),
   liveClock: document.querySelector("#liveClock"),
   startDateText: document.querySelector("#startDateText"),
-  milestoneTitle: document.querySelector("#milestoneTitle"),
-  milestoneDetail: document.querySelector("#milestoneDetail"),
-  progressCircle: document.querySelector("#progressCircle"),
-  progressPercent: document.querySelector("#progressPercent"),
+  goalMonthDetail: document.querySelector("#goalMonthDetail"),
+  goalDay12Detail: document.querySelector("#goalDay12Detail"),
+  goalYearDetail: document.querySelector("#goalYearDetail"),
   installButton: document.querySelector("#installButton"),
   statusText: document.querySelector("#statusText"),
   toast: document.querySelector("#toast")
@@ -185,39 +184,84 @@ function formatNumber(value) {
   return new Intl.NumberFormat("th-TH").format(value);
 }
 
-function getNextMilestone(exactTotalDays) {
-  const completedDays = Math.floor(exactTotalDays);
+function formatThaiDateTime(date) {
+  const dateText = new Intl.DateTimeFormat("th-TH", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(date);
 
-  const step =
-    completedDays < 100
-      ? 10
-      : completedDays < 1000
-        ? 100
-        : 500;
+  const timeText = new Intl.DateTimeFormat("th-TH", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(date);
 
-  const target =
-    (Math.floor(exactTotalDays / step) + 1) * step;
-
-  const previous = target - step;
-
-  const progress = Math.min(
-    1,
-    Math.max(
-      0,
-      (exactTotalDays - previous) / step
-    )
-  );
-
-  const remaining = Math.ceil(
-    target - exactTotalDays
-  );
-
-  return {
-    target,
-    remaining,
-    progress
-  };
+  return `${dateText} เวลา ${timeText} น.`;
 }
+
+function getNextOneMonthMark(now) {
+  let target = new Date(START_DATE);
+
+  while (target <= now) {
+    target = addMonthsClamped(target, 1);
+  }
+
+  return target;
+}
+
+function getNextMonthlyDay12(now) {
+  let target = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    12,
+    0, 0, 0, 0
+  );
+
+  if (target <= now) {
+    target = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      12,
+      0, 0, 0, 0
+    );
+  }
+
+  return target;
+}
+
+function getNextYearlyAnniversary(now) {
+  let target = new Date(
+    now.getFullYear(),
+    6, 12,
+    14, 54, 0, 0
+  );
+
+  if (target <= now) {
+    target = new Date(
+      now.getFullYear() + 1,
+      6, 12,
+      14, 54, 0, 0
+    );
+  }
+
+  return target;
+}
+
+function formatRemaining(target, now) {
+  let ms = Math.max(0, target.getTime() - now.getTime());
+
+  const days = Math.floor(ms / DAY_MS);
+  ms -= days * DAY_MS;
+
+  const hours = Math.floor(ms / 3600000);
+  ms -= hours * 3600000;
+
+  const minutes = Math.floor(ms / 60000);
+
+  return `เหลืออีก ${formatNumber(days)} วัน ${String(hours).padStart(2, "0")} ชม. ${String(minutes).padStart(2, "0")} นาที`;
+}
+
 
 function render() {
   const now = new Date();
@@ -236,9 +280,6 @@ function render() {
     now
   );
 
-  const milestone = getNextMilestone(
-    elapsed.exactTotalDays
-  );
 
   elements.counterTitle.textContent =
     COUNTER_TITLE;
@@ -268,31 +309,12 @@ function render() {
   elements.startDateText.textContent =
     "12 กรกฎาคม 2569 เวลา 14:54 น.";
 
-  elements.milestoneTitle.textContent =
-    `ครบ ${formatNumber(milestone.target)} วัน`;
-
-  elements.milestoneDetail.textContent =
-    milestone.remaining === 1
-      ? "เหลืออีกไม่เกิน 1 วัน"
-      : `เหลืออีกประมาณ ${formatNumber(
-          milestone.remaining
-        )} วัน`;
 
   const circumference = 2 * Math.PI * 18;
 
   const offset =
     circumference * (1 - milestone.progress);
 
-  elements.progressCircle.style.strokeDasharray =
-    circumference.toFixed(1);
-
-  elements.progressCircle.style.strokeDashoffset =
-    offset.toFixed(1);
-
-  elements.progressPercent.textContent =
-    `${Math.round(
-      milestone.progress * 100
-    )}%`;
 
   document.title =
     `${COUNTER_TITLE} • ${
