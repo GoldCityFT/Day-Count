@@ -73,21 +73,34 @@
       </article>
     </section>
 
-    <section class="milestone-card">
-      <div class="milestone-icon" aria-hidden="true">✦</div>
-      <div class="milestone-copy">
-        <p class="section-label">เป้าหมายถัดไป</p>
-        <strong id="milestoneTitle">—</strong>
-        <span id="milestoneDetail">—</span>
-      </div>
-      <div class="progress-ring" aria-hidden="true">
-        <svg viewBox="0 0 44 44">
-          <circle class="ring-track" cx="22" cy="22" r="18"/>
-          <circle id="progressCircle" class="ring-progress" cx="22" cy="22" r="18"/>
-        </svg>
-        <span id="progressPercent">0%</span>
-      </div>
-    </section>
+    <section class="milestone-card milestone-stack">
+  <article class="milestone-item">
+    <div class="milestone-icon" aria-hidden="true">🌙</div>
+    <div class="milestone-copy">
+      <p class="section-label">เป้าหมายที่ 1</p>
+      <strong>ครบ 1 เดือน</strong>
+      <span id="goalMonthDetail">—</span>
+    </div>
+  </article>
+
+  <article class="milestone-item">
+    <div class="milestone-icon" aria-hidden="true">📅</div>
+    <div class="milestone-copy">
+      <p class="section-label">เป้าหมายที่ 2</p>
+      <strong>ครบรอบวันที่ 12 ของเดือนนั้น ๆ</strong>
+      <span id="goalDay12Detail">—</span>
+    </div>
+  </article>
+
+  <article class="milestone-item">
+    <div class="milestone-icon" aria-hidden="true">🎉</div>
+    <div class="milestone-copy">
+      <p class="section-label">เป้าหมายที่ 3</p>
+      <strong>ครบวันที่ 12 กรกฎาคม เวลา 14:54 ของทุกปี</strong>
+      <span id="goalYearDetail">—</span>
+    </div>
+  </article>
+</section>
 
     <footer class="footer-actions">
       <button id="installButton" class="primary-button hidden" type="button">
