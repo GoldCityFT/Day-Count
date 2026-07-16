@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Day Counter ส่วนตัวสำหรับนับเวลาจากวันสำคัญ">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+  <title>Day Counter</title>
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">💞</div>
+      
+        <div>
+          <p class="eyebrow">OUR DAY </p>
+          <h1 id="counterTitle">ช่วงเวลาของเรา</h1>
+        </div>
+      </div>
+
+      
+    </header>
+
+    <section class="hero-card">
+      <div class="hero-copy">
+        <p class="section-label">ผ่านมาแล้ว</p>
+        <div class="calendar-grid" aria-label="ระยะเวลาที่ผ่านมา">
+          <article class="time-unit">
+            <strong id="years">0</strong>
+            <span>ปี</span>
+          </article>
+          <article class="time-unit">
+            <strong id="months">0</strong>
+            <span>เดือน</span>
+          </article>
+          <article class="time-unit">
+            <strong id="days">0</strong>
+            <span>วัน</span>
+          </article>
+        </div>
+      </div>
+
+      <div class="start-date-row">
+        <span>จากวันนั้นวันที่</span>
+        <strong id="startDateText">
+          12 กรกฎาคม 2569 เวลา 14:54 น.
+        </strong>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <article class="summary-card total-card">
+        <div>
+          <p class="section-label">จำนวนวันทั้งหมด</p>
+          <strong id="totalDays">0</strong>
+          <span>วัน</span>
+        </div>
+        <div class="orb" aria-hidden="true"></div>
+      </article>
+
+      <article class="summary-card">
+        <p class="section-label">เวลาที่กำลังเดินต่อ</p>
+        <strong id="liveClock">00:00:00</strong>
+        <span>ชั่วโมง : นาที : วินาที</span>
+      </article>
+    </section>
+
+    <section class="milestone-card milestone-stack">
+  <article class="milestone-item">
+  <div class="milestone-icon" aria-hidden="true">🌙</div>
+
+  <div class="milestone-copy">
+    <p class="section-label">เป้าหมายที่ 1</p>
+    <strong>ครบ 1 เดือน</strong>
+    <span id="goalMonthDetail">—</span>
+  </div>
+
+  <div class="goal-count-box">
+    <span class="goal-count-label">จำนวน</span>
+    <strong id="goalMonthCount">0</strong>
+  </div>
+</article>
+
+<article class="milestone-item">
+  <div class="milestone-icon" aria-hidden="true">💯</div>
+
+  <div class="milestone-copy">
+    <p class="section-label">เป้าหมายที่ 2</p>
+    <strong>ครบทุก 100 วัน</strong>
+    <span id="goal100Detail">—</span>
+  </div>
+
+  <div class="goal-count-box">
+    <span class="goal-count-label">จำนวน</span>
+    <strong id="goal100Count">0</strong>
+  </div>
+</article>
+
+  <article class="milestone-item">
+  <div class="milestone-icon" aria-hidden="true">🎉</div>
+
+  <div class="milestone-copy">
+    <p class="section-label">เป้าหมายที่ 3</p>
+    <strong>ครบวันที่ 12 กรกฎาคม เวลา 14:54 ของทุกปี</strong>
+    <span id="goalYearDetail">—</span>
+  </div>
+
+  <div class="goal-count-box">
+    <span class="goal-count-label">จำนวน</span>
+    <strong id="goalYearCount">0</strong>
+  </div>
+</article>
+</section>
+
+    <footer class="footer-actions">
+      <button id="installButton" class="primary-button hidden" type="button">
+        เพิ่มไว้บนหน้าจอมือถือ
+      </button>
+      <p id="statusText">คำนวณอัตโนมัติตามวันและเวลาของอุปกรณ์</p>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
