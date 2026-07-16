@@ -591,3 +591,37 @@ select option {
     animation-duration: .01ms !important;
   }
 }
+
+.goals-section {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.goal-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.goal-card .milestone-copy strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1rem;
+}
+
+.goal-card .milestone-copy span {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
