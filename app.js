@@ -1,5 +1,5 @@
 const START_DATE = new Date("2026-07-12T14:54:00+07:00");
-const COUNTER_TITLE = "ช่วงเวลาของฉัน";
+const COUNTER_TITLE = "ช่วงเวลาของเรา";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const elements = {
@@ -200,14 +200,8 @@ function formatThaiDateTime(date) {
   return `${dateText} เวลา ${timeText} น.`;
 }
 
-function getNextOneMonthMark(now) {
-  let target = new Date(START_DATE);
-
-  while (target <= now) {
-    target = addMonthsClamped(target, 1);
-  }
-
-  return target;
+function getOneMonthTarget() {
+  return addMonthsClamped(START_DATE, 1);
 }
 
 function getNextMonthlyDay12(now) {
@@ -306,20 +300,50 @@ function render() {
     )
     .join(":");
 
-  elements.startDateText.textContent =
-    "12 กรกฎาคม 2569 เวลา 14:54 น.";
+ elements.startDateText.textContent =
+  "12 กรกฎาคม 2569 เวลา 14:54 น.";
 
 
-  const circumference = 2 * Math.PI * 18;
+// เป้าหมายที่ 1: ครบ 1 เดือนครั้งแรก
+const oneMonthTarget =
+  getOneMonthTarget();
 
-  const offset =
-    circumference * (1 - milestone.progress);
+// เป้าหมายที่ 2: วันที่ 12 ของเดือนถัดไป
+const monthlyDay12Target =
+  getNextMonthlyDay12(now);
+
+// เป้าหมายที่ 3: วันที่ 12 กรกฎาคม เวลา 14:54 ของปีถัดไป
+const yearlyTarget =
+  getNextYearlyAnniversary(now);
 
 
-  document.title =
-    `${COUNTER_TITLE} • ${
-      formatNumber(elapsed.totalDays)
-    } วัน`;
+// แสดงเป้าหมายครบ 1 เดือน
+if (now < oneMonthTarget) {
+  elements.goalMonthDetail.textContent =
+    `${formatThaiDateTime(oneMonthTarget)} • ` +
+    formatRemaining(oneMonthTarget, now);
+} else {
+  elements.goalMonthDetail.textContent =
+    `ครบแล้วเมื่อ ${formatThaiDateTime(oneMonthTarget)}`;
+}
+
+
+// แสดงวันที่ 12 ของเดือนถัดไป
+elements.goalDay12Detail.textContent =
+  `${formatThaiDateTime(monthlyDay12Target)} • ` +
+  formatRemaining(monthlyDay12Target, now);
+
+
+// แสดงวันครบรอบประจำปี
+elements.goalYearDetail.textContent =
+  `${formatThaiDateTime(yearlyTarget)} • ` +
+  formatRemaining(yearlyTarget, now);
+
+
+document.title =
+  `${COUNTER_TITLE} • ${
+    formatNumber(elapsed.totalDays)
+  } วัน`;
 }
 
 function showToast(message) {
