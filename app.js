@@ -457,7 +457,7 @@ elements.installButton.addEventListener(
 
     showToast(
       isIOS
-        ? "บน iPhone: กด Share แล้วเลือก Add to Home Screen"
+        ? "บน iPhone: กด Share แล้วเลือก Add to Home Screen ผ่าน Safari"
         : "เปิดเมนูเบราว์เซอร์ แล้วเลือกเพิ่มไปยังหน้าจอหลัก"
     );
   }
