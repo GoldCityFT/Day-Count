@@ -567,7 +567,7 @@ select option {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: max(22px, env(safe-area-inset-bottom));
+  bottom: calc(88px + env(safe-area-inset-bottom));
   z-index: 20;
   width: max-content;
   max-width: calc(100% - 32px);
