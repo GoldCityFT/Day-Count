@@ -1,4 +1,4 @@
-const START_DATE = new Date("2026-07-12T14:54:00+07:00");
+const START_DATE = new Date("2026-08-14T19:34:00+07:00");
 const COUNTER_TITLE = "ช่วงเวลาของเรา";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
