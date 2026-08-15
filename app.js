@@ -233,15 +233,15 @@ function getNextHundredDayTarget(now) {
 function getNextYearlyAnniversary(now) {
   let target = new Date(
     now.getFullYear(),
-    6, 12,
-    14, 54, 0, 0
+    7, 14,
+    19, 34, 0, 0
   );
 
   if (target <= now) {
     target = new Date(
       now.getFullYear() + 1,
-      6, 12,
-      14, 54, 0, 0
+      7, 14,
+      19, 34, 0, 0
     );
   }
 
@@ -286,7 +286,7 @@ function countHundredDayCycles(now) {
 }
 
 function countYearlyAnniversaries(now) {
-  const firstTarget = new Date(2027, 6, 12, 14, 54, 0, 0);
+  const firstTarget = new Date(2027, 7, 14, 19, 34, 0, 0);
 
   if (now < firstTarget) return 0;
 
@@ -295,14 +295,14 @@ function countYearlyAnniversaries(now) {
 
   while (cursor <= now) {
     count++;
-    cursor = new Date(
-      cursor.getFullYear() + 1,
-      6,
-      12,
-      14,
-      54,
-      0,
-      0
+  cursor = new Date(
+    cursor.getFullYear() + 1,
+    7,
+    14,
+    19,
+    34,
+    0,
+    0
     );
   }
 
